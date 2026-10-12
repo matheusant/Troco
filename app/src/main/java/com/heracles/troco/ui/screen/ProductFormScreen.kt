@@ -9,9 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -32,11 +29,12 @@ import com.heracles.troco.R
 import com.heracles.troco.components.ButtonComponent
 import com.heracles.troco.components.TrocoTextField
 import com.heracles.troco.ui.theme.DMSansFontFamily
-import com.heracles.troco.ui.theme.TrocoTheme
 import com.heracles.troco.ui.theme.RubikFontFamily
+import com.heracles.troco.ui.theme.TrocoTheme
 
 @Composable
 fun ProductScreen(
+    productId: String? = null,
     scaffoldPaddingValues: PaddingValues,
     productState: ProductUiState,
     onProdNameChange: (String) -> Unit,
@@ -45,6 +43,8 @@ fun ProductScreen(
     onAvailabilityChange: (Boolean) -> Unit,
     onSave: () -> Unit
 ) {
+    val isEditing = productId != null
+
     Column(
         verticalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
@@ -63,7 +63,8 @@ fun ProductScreen(
                 keyboardType = KeyboardType.Text,
                 keyboardCapitalization = KeyboardCapitalization.Words,
                 hasError = productState.errors.name,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isEditing
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -136,7 +137,7 @@ fun ProductScreen(
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
                     } else {
                         Text(
-                            text = "Salvar Produto",
+                            text = if (isEditing) "Salvar Alterações" else "Salvar Produto",
                             style = TextStyle(
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 fontSize = 16.sp,
@@ -147,7 +148,8 @@ fun ProductScreen(
                         )
                     }
                 },
-                onClick = onSave
+                onClick = onSave,
+                enabled = !productState.isLoading
             )
         }
     }

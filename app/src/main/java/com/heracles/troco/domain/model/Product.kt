@@ -19,7 +19,7 @@ enum class ProductStatus(
 data class Product (
     val id: String = UUID.randomUUID().toString(),
     val name: String,
-    val price: String,
+    val price: Long,
     val quantity: Int,
     val status: ProductStatus
 )

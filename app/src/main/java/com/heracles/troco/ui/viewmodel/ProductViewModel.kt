@@ -4,7 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heracles.troco.domain.model.Product
 import com.heracles.troco.domain.model.ProductStatus
+import com.heracles.troco.domain.model.ProductStatusPolicy
+import com.heracles.troco.domain.usecase.product.GetProductsUseCase
 import com.heracles.troco.domain.usecase.product.SaveProductUseCase
+import com.heracles.troco.domain.usecase.product.UpdateProductUseCase
 import com.heracles.troco.ui.screen.ProductUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,19 +15,23 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.math.BigDecimal
+import java.util.UUID
 import javax.inject.Inject
-import kotlin.text.ifEmpty
 
 @HiltViewModel
 class ProductViewModel @Inject constructor(
-    private val saveProductUseCase: SaveProductUseCase
-): ViewModel() {
+    private val saveProductUseCase: SaveProductUseCase,
+    private val updateProductUseCase: UpdateProductUseCase,
+    private val getProductsUseCase: GetProductsUseCase
+) : ViewModel() {
     private val _productName = MutableStateFlow("")
     private val _productPrice = MutableStateFlow("")
     private val _productQuantity = MutableStateFlow("")
     private val _isLoading = MutableStateFlow(false)
     private val _isAvailable = MutableStateFlow(false)
+
+    private var editingProductId: String? = null
+
 
     val uiState = combine(
         _productName,
@@ -52,7 +59,9 @@ class ProductViewModel @Inject constructor(
     }
 
     fun onProdPriceChange(value: String) {
-        _productPrice.value = value.filter(Char::isDigit)
+        _productPrice.value = value
+            .filter(Char::isDigit)
+            .trimStart('0')
     }
 
     fun onProdQuantityChange(value: String) {
@@ -63,30 +72,72 @@ class ProductViewModel @Inject constructor(
         _isAvailable.value = value
     }
 
-    fun addProduct() {
-        viewModelScope.launch {
-            val status = when(_isAvailable.value) {
-                true -> {
-                    if (_productQuantity.value.toInt() > 5) ProductStatus.ACTIVE else ProductStatus.CRITIC
-                }
-                false -> {
-                    ProductStatus.INACTIVE
-                }
-            }
-            val amount = BigDecimal(_productPrice.value.ifEmpty { "0" }).movePointLeft(2)
-            saveProductUseCase(
-                Product(
-                    name = _productName.value,
-                    price = amount.toString(),
-                    quantity = _productQuantity.value.toInt(),
-                    status = status
-                )
+    fun saveProduct() {
+        if (_isLoading.value) return
+
+        val quantity = _productQuantity.value.toIntOrNull() ?: return
+        val price = _productPrice.value.toLongOrNull() ?: return
+
+        val product = Product(
+            id = editingProductId ?: UUID.randomUUID().toString(),
+            name = _productName.value,
+            price = price,
+            quantity = quantity,
+            status = ProductStatusPolicy.determineStatus(
+                isAvailable = _isAvailable.value,
+                quantity = quantity
             )
-            _productName.value = ""
-            _productPrice.value = ""
-            _productQuantity.value = ""
-            _isAvailable.value = false
+        )
+
+        viewModelScope.launch {
+            if (_isLoading.value) return@launch
+
+            _isLoading.value = true
+
+            try {
+                if (editingProductId != null) {
+                    updateProductUseCase(product)
+                } else {
+                    saveProductUseCase(product)
+                }
+                clearFields()
+            } catch (e: Exception) {
+
+            } finally {
+                _isLoading.value = false
+            }
         }
+    }
+
+    fun getProductById(id: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+
+            try {
+                val product = getProductsUseCase.getProductById(id)
+
+                editingProductId = product.id
+                _productName.value = product.name
+                _productPrice.value = product.price.toString()
+                _productQuantity.value = product.quantity.toString()
+                _isAvailable.value = product.status != ProductStatus.INACTIVE
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    private fun clearFields() {
+        _productName.value = ""
+        _productPrice.value = ""
+        _productQuantity.value = ""
+        _isAvailable.value = false
+    }
+
+    fun resetForm() {
+        clearFields()
+        editingProductId = null
+        _isLoading.value = false
     }
 
 }

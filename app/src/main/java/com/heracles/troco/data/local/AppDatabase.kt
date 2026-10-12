@@ -11,7 +11,7 @@ import com.heracles.troco.data.local.entity.ProductEntity
     entities = [
         ProductEntity::class
     ],
-    version = 1
+    version = 2
 )
 abstract class AppDatabase: RoomDatabase() {
     abstract fun productDao(): ProductDao

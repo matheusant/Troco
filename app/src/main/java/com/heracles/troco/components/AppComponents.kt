@@ -119,6 +119,7 @@ fun TrocoTextField(
     isPassword: Boolean = false,
     isPhone: Boolean = false,
     isMoney: Boolean = false,
+    enabled: Boolean = true,
     keyboardType: KeyboardType = KeyboardType.Text,
     keyboardCapitalization: KeyboardCapitalization = KeyboardCapitalization.Sentences
 ) {
@@ -194,6 +195,7 @@ fun TrocoTextField(
                 )
             }
         },
+        enabled = enabled,
         colors = TextFieldDefaults.colors(
             // Fundo
             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -348,13 +350,14 @@ fun ClickableTextComponent(
 }
 
 @Composable
-fun ButtonComponent(content: @Composable (() -> Unit), onClick: () -> Unit) {
+fun ButtonComponent(content: @Composable (() -> Unit), onClick: () -> Unit, enabled: Boolean = true) {
     Button(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth(),
         contentPadding = PaddingValues(),
-        colors = ButtonDefaults.buttonColors(Color.Transparent)
+        colors = ButtonDefaults.buttonColors(Color.Transparent),
+        enabled = enabled
     ) {
         Box(
             modifier = Modifier

@@ -1,5 +1,6 @@
 package com.heracles.troco.ui.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -71,7 +72,8 @@ object Routes {
     const val MEU_FIADO = "meu_fiado"
     const val MANAGEMENT = "management"
     const val PRODUCTS = "products"
-    const val PRODUCT = "product"
+    const val PRODUCT_CREATE = "product_create"
+    const val PRODUCT_EDIT = "product_edit"
     const val TERMS_AND_CONDITIONS = "terms_and_conditions"
     const val PRIVACY_POLITICS = "privacy_politics"
 }
@@ -89,6 +91,8 @@ fun MerceariaApp(
 
     val startDestination = remember { Routes.PRODUCTS }
 
+    var editing by remember { mutableStateOf<String?>(null) }
+
     val bottomBarItems = listOf(
         BarItem.Catalog,
         BarItem.MeuFiado
@@ -98,7 +102,8 @@ fun MerceariaApp(
         BarItem.MeuFiado,
         BarItem.Management,
         BarItem.Products,
-        BarItem.Product,
+        BarItem.ProductCreate,
+        BarItem.ProductEdit,
     )
 
     Scaffold(
@@ -120,7 +125,10 @@ fun MerceariaApp(
                 Routes.PRODUCTS -> {
                     TrocoAddFAB(
                         onClicked = {
-                            navController.navigate(Routes.PRODUCT) {
+                            productViewModel.resetForm()
+                            editing = null
+
+                            navController.navigate(Routes.PRODUCT_CREATE) {
                                 launchSingleTop = true
                             }
                         }
@@ -328,21 +336,57 @@ fun MerceariaApp(
                     ProductsScreen(
                         state = productsListState,
                         searchResults = searchResults,
+                        onEdit = { productId ->
+                            editing = productId
+                            navController.navigate(Routes.PRODUCT_EDIT)
+                        },
                         onQueryChange = productsListViewModel::onSearchQueryChange,
                         scaffoldPadding = innerPadding
                     )
                 }
 
-                composable(Routes.PRODUCT) {
+                composable(Routes.PRODUCT_CREATE) {
                     val productState by productViewModel.uiState.collectAsStateWithLifecycle()
                     ProductScreen(
+                        productId = editing,
                         scaffoldPaddingValues = innerPadding,
                         productState = productState,
                         onProdNameChange = productViewModel::onProdNameChange,
                         onProdPriceChange = productViewModel::onProdPriceChange,
                         onProdQuantityChange = productViewModel::onProdQuantityChange,
                         onAvailabilityChange = productViewModel::onAvailabilityChange,
-                        onSave = productViewModel::addProduct
+                        onSave = productViewModel::saveProduct
+                    )
+                }
+
+                composable(Routes.PRODUCT_EDIT) {
+                    val productState by productViewModel.uiState.collectAsStateWithLifecycle()
+                    val handler = {
+                        productViewModel.resetForm()
+                        navController.popBackStack()
+                    }
+                    BackHandler { handler() }
+
+                    LaunchedEffect(editing) {
+                        if (editing != null) {
+                            productViewModel.getProductById(editing!!)
+                        } else {
+                            productViewModel.resetForm()
+                        }
+                    }
+
+                    ProductScreen(
+                        productId = editing,
+                        scaffoldPaddingValues = innerPadding,
+                        productState = productState,
+                        onProdNameChange = productViewModel::onProdNameChange,
+                        onProdPriceChange = productViewModel::onProdPriceChange,
+                        onProdQuantityChange = productViewModel::onProdQuantityChange,
+                        onAvailabilityChange = productViewModel::onAvailabilityChange,
+                        onSave = {
+                            productViewModel.saveProduct()
+                            handler()
+                        }
                     )
                 }
 
@@ -491,9 +535,14 @@ sealed class BarItem(
         icon = R.drawable.ic_mgmt_product
     )
 
-    object Product : BarItem(
-        route = Routes.PRODUCT,
+    object ProductCreate : BarItem(
+        route = Routes.PRODUCT_CREATE,
         topTitle = "Novo Produto",
+    )
+
+    object ProductEdit : BarItem(
+        route = Routes.PRODUCT_EDIT,
+        topTitle = "Editar Produto",
     )
 
     object Caderneta : BarItem(

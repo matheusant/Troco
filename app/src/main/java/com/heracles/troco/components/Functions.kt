@@ -1,9 +1,9 @@
 package com.heracles.troco.components
 
-fun String.formatMoney(): String {
-    if (isEmpty()) return ""
+fun Long.formatMoney(): String {
+    if (this == 0L) return "R$ 0,00"
 
-    val value = filter { it.isDigit() }.padStart(3, '0')
+    val value = this.toString().padStart(3, '0')
 
     val cents = value.takeLast(2)
     val integer = value.dropLast(2)

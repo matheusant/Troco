@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +48,7 @@ fun ProductsScreen(
     state: ProductsListUiState,
     searchResults: List<Product>,
     onQueryChange: (String) -> Unit,
+    onEdit: (String) -> Unit,
     scaffoldPadding: PaddingValues
 ) {
     Column(
@@ -71,7 +73,12 @@ fun ProductsScreen(
                 items = searchResults,
                 key = { product -> product.id }
             ) { product ->
-                ProductItem(product = product)
+                ProductItem(
+                    product = product,
+                    onEditRequest = {
+                        onEdit(product.id)
+                    }
+                )
             }
         }
     }
@@ -79,17 +86,18 @@ fun ProductsScreen(
 
 @Composable
 fun ProductItem(
-    product: Product
+    product: Product,
+    onEditRequest: () -> Unit
 ) {
     val isEnabled = product.status != ProductStatus.INACTIVE
     Card(
-        onClick = {},
+        onClick = onEditRequest,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        enabled = product.status != ProductStatus.INACTIVE,
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+        border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.outlineVariant),
+        modifier = Modifier.alpha(if (isEnabled) 1f else 0.5f)
     ) {
         Row(
             modifier = Modifier
@@ -189,23 +197,24 @@ private fun ProductsScreenPreview() {
             ProductsScreen(
                 state = ProductsListUiState(),
                 onQueryChange = {},
+                onEdit = {},
                 scaffoldPadding = PaddingValues(),
                 searchResults = listOf(
                     Product(
                         name = "Café Torrado 500g",
-                        price = "18.90",
+                        price = 1890L,
                         quantity = 15,
                         status = ProductStatus.ACTIVE
                     ),
                     Product(
                         name = "Leite Integral 1L",
-                        price = "5.49",
+                        price = 549L,
                         quantity = 3,
                         status = ProductStatus.CRITIC
                     ),
                     Product(
                         name = "Açúcar Refinado 1kg",
-                        price = "5.10",
+                        price = 510L,
                         quantity = 0,
                         status = ProductStatus.INACTIVE
                     ),

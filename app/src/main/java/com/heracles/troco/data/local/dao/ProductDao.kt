@@ -25,8 +25,8 @@ interface ProductDao {
     @Query(
         """
             UPDATE products 
-            SET quantity = :quantity AND price = :price AND name = :name AND status = :status
+            SET quantity = :quantity, price = :price, name = :name, status = :status
             WHERE id = :id
         """)
-    suspend fun updateProduct(id: String, name: String, price: String, quantity: Int, status: ProductStatus)
+    suspend fun updateProduct(id: String, name: String, price: Long, quantity: Int, status: ProductStatus)
 }
