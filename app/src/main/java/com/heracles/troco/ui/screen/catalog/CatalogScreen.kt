@@ -1,4 +1,4 @@
-package com.heracles.troco.ui.screen
+package com.heracles.troco.ui.screen.catalog
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -13,16 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -35,60 +29,22 @@ import androidx.compose.ui.unit.sp
 import com.heracles.troco.components.TrocoSearchBar
 import com.heracles.troco.domain.ProductAvailability
 import com.heracles.troco.domain.model.CatalogProduct
+import com.heracles.troco.ui.screen.catalog.components.CatalogCardItemSkeleton
 import com.heracles.troco.ui.theme.DMSansFontFamily
 import com.heracles.troco.ui.theme.RubikFontFamily
 
 @Composable
 fun CatalogScreen(
-    query: String,
+    state: CatalogUiState,
     onQueryChange: (String) -> Unit,
     scaffoldPadding: PaddingValues
 ) {
-    val products = listOf(
-        CatalogProduct(
-            bg = Color.Yellow,
-            name = "Café Torrado",
-            price = "R$ 18,80",
-            status = ProductAvailability.AVAILABLE
-        ),
-        CatalogProduct(
-            bg = Color.Cyan,
-            name = "Bolacha",
-            price = "R$ 3,50",
-            status = ProductAvailability.AVAILABLE
-        ),
-        CatalogProduct(
-            bg = Color.Magenta,
-            name = "Arroz 2Kg",
-            price = "R$ 10,00",
-            status = ProductAvailability.OUT_OF_STOCK
-        ),
-        CatalogProduct(
-            bg = Color.Red,
-            name = "Feijão",
-            price = "R$ 5,80",
-            status = ProductAvailability.LAST_UNITS
-        ),
-        CatalogProduct(
-            bg = Color.Magenta,
-            name = "Arroz 2Kg",
-            price = "R$ 10,00",
-            status = ProductAvailability.OUT_OF_STOCK
-        ),
-        CatalogProduct(
-            bg = Color.Red,
-            name = "Feijão",
-            price = "R$ 5,80",
-            status = ProductAvailability.LAST_UNITS
-        ),
-    )
-
     Column(
         modifier = Modifier
             .fillMaxSize(),
     ) {
         TrocoSearchBar(
-            query = query,
+            query = state.query,
             onQueryChange = onQueryChange,
             placeholder = "Buscar produtos..."
         )
@@ -103,23 +59,35 @@ fun CatalogScreen(
             modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
         )
 
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 160.dp),
-            modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(bottom = scaffoldPadding.calculateBottomPadding()),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(
-                items = products,
-                key = { it.id } // Usa o ID único do produto como chave
-            ) { item ->
-                CatalogCardItem(
-                    bg = item.bg,
-                    name = item.name,
-                    price = item.price,
-                    status = item.status
-                )
+        if (state.isLoading) {
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 160.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(4) {
+                    CatalogCardItemSkeleton()
+                }
+            }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 160.dp),
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(bottom = scaffoldPadding.calculateBottomPadding()),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(
+                    items = state.products,
+                    key = { it.id } // Usa o ID único do produto como chave
+                ) { item ->
+                    CatalogCardItem(
+                        bg = item.bg,
+                        name = item.name,
+                        price = item.price,
+                        status = item.status
+                    )
+                }
             }
         }
     }
@@ -214,8 +182,39 @@ fun CatalogStatusBadge(status: ProductAvailability) {
 @Composable
 private fun CatalogScreenPreview() {
     CatalogScreen(
-        "",
-        {},
-        PaddingValues()
+        state = CatalogUiState(
+            products = listOf(
+                CatalogProduct(
+                    id = "1",
+                    bg = Color.Yellow,
+                    name = "Café Torrado",
+                    price = "R$ 18,80",
+                    status = ProductAvailability.AVAILABLE
+                ),
+                CatalogProduct(
+                    id = "2",
+                    bg = Color.Cyan,
+                    name = "Bolacha",
+                    price = "R$ 3,50",
+                    status = ProductAvailability.AVAILABLE
+                ),
+                CatalogProduct(
+                    id = "3",
+                    bg = Color.Magenta,
+                    name = "Arroz 2Kg",
+                    price = "R$ 10,00",
+                    status = ProductAvailability.OUT_OF_STOCK
+                ),
+                CatalogProduct(
+                    id = "4",
+                    bg = Color.Red,
+                    name = "Feijão",
+                    price = "R$ 5,80",
+                    status = ProductAvailability.LAST_UNITS
+                ),
+            )
+        ),
+        onQueryChange = {},
+        scaffoldPadding = PaddingValues()
     )
 }

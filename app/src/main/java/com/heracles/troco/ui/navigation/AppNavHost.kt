@@ -25,7 +25,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,7 +49,7 @@ import com.heracles.troco.components.TrocoAddFAB
 import com.heracles.troco.domain.model.Transaction
 import com.heracles.troco.domain.model.TransactionItem
 import com.heracles.troco.domain.model.TransactionType
-import com.heracles.troco.ui.screen.CatalogScreen
+import com.heracles.troco.ui.screen.catalog.CatalogScreen
 import com.heracles.troco.ui.screen.LoginScreen
 import com.heracles.troco.ui.screen.ManagementScreen
 import com.heracles.troco.ui.screen.MeuFiadoScreen
@@ -61,6 +60,7 @@ import com.heracles.troco.ui.screen.ProductsScreen
 import com.heracles.troco.ui.screen.SignUpScreen
 import com.heracles.troco.ui.screen.TermsAndConditionsScreen
 import com.heracles.troco.ui.theme.RubikFontFamily
+import com.heracles.troco.ui.viewmodel.CatalogViewModel
 import com.heracles.troco.ui.viewmodel.ProductViewModel
 import com.heracles.troco.ui.viewmodel.ProductsListViewModel
 import com.heracles.troco.ui.viewmodel.SignupViewModel
@@ -82,20 +82,23 @@ object Routes {
 fun MerceariaApp(
     signUpViewModel: SignupViewModel = hiltViewModel(),
     productViewModel: ProductViewModel = hiltViewModel(),
-    productsListViewModel: ProductsListViewModel = hiltViewModel()
+    productsListViewModel: ProductsListViewModel = hiltViewModel(),
+    catalogViewModel: CatalogViewModel = hiltViewModel()
 ) {
     val focusManger = LocalFocusManager.current
     val navController = rememberNavController()
     val navBarStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBarStackEntry?.destination?.route
 
-    val startDestination = remember { Routes.PRODUCTS }
+    val startDestination = remember { Routes.MANAGEMENT }
 
     var editing by remember { mutableStateOf<String?>(null) }
 
     val bottomBarItems = listOf(
+        BarItem.Management,
         BarItem.Catalog,
-        BarItem.MeuFiado
+        BarItem.MeuFiado,
+        BarItem.Products,
     )
     val topBarItems = listOf(
         BarItem.Catalog,
@@ -196,13 +199,11 @@ fun MerceariaApp(
                 }
 
                 composable(Routes.CATALOG) {
-                    var searchQuery by rememberSaveable { mutableStateOf("") }
+                    val catalogUiState by catalogViewModel.uiState.collectAsStateWithLifecycle()
 
                     CatalogScreen(
-                        query = searchQuery,
-                        onQueryChange = { newQuery ->
-                            searchQuery = newQuery
-                        },
+                        state = catalogUiState,
+                        onQueryChange = catalogViewModel::onSearchQueryChange,
                         scaffoldPadding = innerPadding
                     )
                 }

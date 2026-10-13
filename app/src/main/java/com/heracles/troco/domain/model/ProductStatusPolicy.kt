@@ -1,8 +1,8 @@
 package com.heracles.troco.domain.model
 
-object ProductStatusPolicy {
+import com.heracles.troco.components.Constants.CRITICAL_QUANTITY
 
-    private const val CRITICAL_QUANTITY = 5
+object ProductStatusPolicy {
 
     fun determineStatus(
         isAvailable: Boolean,
