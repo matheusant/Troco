@@ -2,6 +2,7 @@ package com.heracles.troco.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.heracles.troco.data.sync.SyncScheduler
 import com.heracles.troco.domain.model.Product
 import com.heracles.troco.domain.model.ProductStatus
 import com.heracles.troco.domain.model.ProductStatusPolicy
@@ -22,7 +23,8 @@ import javax.inject.Inject
 class ProductViewModel @Inject constructor(
     private val saveProductUseCase: SaveProductUseCase,
     private val updateProductUseCase: UpdateProductUseCase,
-    private val getProductsUseCase: GetProductsUseCase
+    private val getProductsUseCase: GetProductsUseCase,
+    private val syncScheduler: SyncScheduler
 ) : ViewModel() {
     private val _productName = MutableStateFlow("")
     private val _productPrice = MutableStateFlow("")
@@ -101,6 +103,12 @@ class ProductViewModel @Inject constructor(
                     saveProductUseCase(product)
                 }
                 clearFields()
+                editingProductId = null
+                try {
+                    syncScheduler.scheduleSync()
+                } catch (e: Exception) {
+
+                }
             } catch (e: Exception) {
 
             } finally {

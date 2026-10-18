@@ -1,6 +1,8 @@
 package com.heracles.troco.di
 
+import com.heracles.troco.data.remote.ProductRemoteDataSource
 import com.heracles.troco.data.repository.FirebaseAuthRepository
+import com.heracles.troco.data.repository.FirestoreProductDataSourceImpl
 import com.heracles.troco.data.repository.ProductRepositoryImpl
 import com.heracles.troco.data.repository.SignupRepositoryImpl
 import com.heracles.troco.domain.repository.AuthRepository
@@ -27,4 +29,9 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindProductRepository(impl: ProductRepositoryImpl): ProductRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindProductRemoteDataSource(impl: FirestoreProductDataSourceImpl): ProductRemoteDataSource
+
 }

@@ -1,5 +1,6 @@
 package com.heracles.troco.data.repository
 
+import com.heracles.troco.data.local.ProductLocalDataSource
 import com.heracles.troco.data.local.dao.ProductDao
 import com.heracles.troco.data.local.entity.ProductEntity
 import com.heracles.troco.domain.model.Product
@@ -11,7 +12,8 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 class ProductRepositoryImpl @Inject constructor(
-    private val productDao: ProductDao
+    private val productDao: ProductDao,
+    private val localDataSource: ProductLocalDataSource
 ): ProductRepository {
     override fun observeProducts(): Flow<List<Product>> {
         return productDao.getAllProducts()
@@ -43,14 +45,14 @@ class ProductRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addProduct(product: Product) {
-        delay(2000.milliseconds)
-        productDao.insertProduct(
-            ProductEntity(
+        localDataSource.saveProduct(
+            product = ProductEntity(
                 name = product.name.trim(),
                 price = product.price,
                 quantity = product.quantity,
                 status = product.status
-            )
+            ),
+            operation = "CREATE"
         )
     }
 

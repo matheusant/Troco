@@ -3,6 +3,7 @@ package com.heracles.troco.di
 import android.content.Context
 import androidx.room.Room
 import com.heracles.troco.data.local.AppDatabase
+import com.heracles.troco.data.local.dao.PendingSyncOperationDao
 import com.heracles.troco.data.local.dao.ProductDao
 import dagger.Module
 import dagger.Provides
@@ -30,4 +31,9 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideProductDao(database: AppDatabase): ProductDao = database.productDao()
+
+    @Provides
+    @Singleton
+    fun providePendingOperationDao(database: AppDatabase): PendingSyncOperationDao =
+        database.pendingSyncOperationDao()
 }
