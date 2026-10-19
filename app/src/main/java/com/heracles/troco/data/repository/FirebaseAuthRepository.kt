@@ -3,6 +3,7 @@ package com.heracles.troco.data.repository
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.heracles.troco.data.remote.awaitResult
 import com.heracles.troco.di.IoDispatcher
@@ -33,6 +34,23 @@ class FirebaseAuthRepository @Inject constructor(
     ): AuthResult {
         val email = "$phone@troco.com"
         return executar { auth.signInWithEmailAndPassword(email, password) }
+    }
+
+    override suspend fun validateSession(): Boolean = withContext(io) {
+        val user = auth.currentUser
+            ?: return@withContext false
+
+        try {
+            user.reload().awaitResult()
+            auth.currentUser != null
+        }  catch (e: FirebaseAuthInvalidUserException) {
+            auth.signOut()
+            false
+        } catch (e: Exception) {
+            // Pode ser uma falha temporária de rede.
+            // Mantemos a sessão local para permitir uso offline.
+            auth.currentUser != null
+        }
     }
 
     override fun sair() {

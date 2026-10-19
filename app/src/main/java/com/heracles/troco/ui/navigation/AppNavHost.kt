@@ -90,7 +90,7 @@ fun MerceariaApp(
     val navBarStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBarStackEntry?.destination?.route
 
-    val startDestination = remember { Routes.MANAGEMENT }
+    val startDestination = remember { Routes.SIGN_UP }
 
     var editing by remember { mutableStateOf<String?>(null) }
 

@@ -8,5 +8,7 @@ interface AuthRepository {
     suspend fun signupWithPhone(phone: String, password: String) : AuthResult
     suspend fun loginWithPhone(phone: String, password: String) : AuthResult
 
+    suspend fun validateSession(): Boolean
+
     fun sair()
 }

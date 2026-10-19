@@ -27,8 +27,18 @@ class SignupViewModel @Inject constructor(
     private val authRepository: AuthRepository,
 ) : ViewModel() {
     private val _uiState =
-        MutableStateFlow(AuthUiState(autenticado = authRepository.usuarioAtual != null))
+        MutableStateFlow(AuthUiState(autenticado = false))
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
+
+    init {
+        if (authRepository.usuarioAtual != null) {
+            viewModelScope.launch {
+                val validatedSession = authRepository.validateSession()
+
+                _uiState.update { it.copy(autenticado = validatedSession) }
+            }
+        }
+    }
 
     fun onPhoneChange(value: String) {
         val digitsOnly = value.filter { it.isDigit() }
