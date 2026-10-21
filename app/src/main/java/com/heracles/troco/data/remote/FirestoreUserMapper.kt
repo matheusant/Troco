@@ -8,7 +8,8 @@ class FirestoreUserMapper @Inject constructor() {
         return User(
             name = (data.getOrDefault("name", "") as? String) ?: "",
             lastName = (data.getOrDefault("lastname", "") as? String) ?: "",
-            phone = (data.getOrDefault("phone", "") as? String) ?: ""
+            phone = (data.getOrDefault("phone", "") as? String) ?: "",
+            admin = (data.getOrDefault("admin", false) as? Boolean) ?: false
         )
     }
 
@@ -16,7 +17,8 @@ class FirestoreUserMapper @Inject constructor() {
         return mapOf(
             "name" to user.name,
             "lastname" to user.lastName,
-            "phone" to user.phone
+            "phone" to user.phone,
+            "admin" to user.admin
         )
     }
 }
