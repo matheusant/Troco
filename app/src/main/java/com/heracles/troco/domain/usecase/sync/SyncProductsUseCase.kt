@@ -1,5 +1,6 @@
 package com.heracles.troco.domain.usecase.sync
 
+import android.util.Log
 import com.heracles.troco.data.local.ProductLocalDataSource
 import com.heracles.troco.data.mapper.toDomain
 import com.heracles.troco.data.remote.ProductRemoteDataSource
@@ -39,5 +40,8 @@ class SyncProductsUseCase @Inject constructor(
                 throw e
             }
         }
+
+        val remoteProducts = remoteDataSource.fetchProducts()
+        localDataSource.syncProductsFromRemote(remoteProducts)
     }
 }

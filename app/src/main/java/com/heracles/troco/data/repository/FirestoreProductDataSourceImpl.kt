@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 class FirestoreProductDataSourceImpl @Inject constructor(
     private val firestore: FirebaseFirestore
-): ProductRemoteDataSource {
+) : ProductRemoteDataSource {
     private val productsCollection = firestore.collection("products")
 
     override suspend fun upsertProduct(product: Product) {
@@ -34,28 +34,49 @@ class FirestoreProductDataSourceImpl @Inject constructor(
             .await()
     }
 
+
     override suspend fun fetchProducts(): List<Product> {
         val snapshot = productsCollection
             .get()
             .await()
 
-        return snapshot.documents.mapNotNull { document ->
+        return snapshot.documents.map { document ->
             val id = document.id
-            val name = document.getString("name") ?: return@mapNotNull null
-            val price = document.getLong("price") ?: return@mapNotNull null
-            val quantity = document.getLong("quantity")?.toInt()
-                ?: return@mapNotNull null
-            val statusName = document.getString("status") ?: return@mapNotNull null
 
-            val status = runCatching {
+            val name = document.getString("name")
+                ?: throw IllegalStateException(
+                    "Produto $id sem o campo name no Firestore"
+                )
+
+            val price = document.getLong("price")
+                ?: throw IllegalStateException(
+                    "Produto $id sem o campo price no Firestore"
+                )
+
+            val quantity = document.getLong("quantity")
+                ?: throw IllegalStateException(
+                    "Produto $id sem o campo quantity no Firestore"
+                )
+
+            val statusName = document.getString("status")
+                ?: throw IllegalStateException(
+                    "Produto $id sem o campo status no Firestore"
+                )
+
+            val status = try {
                 ProductStatus.fromLabel(statusName)
-            }.getOrNull() ?: return@mapNotNull null
+            } catch (e: Exception) {
+                throw IllegalStateException(
+                    "Produto $id possui status inválido: $statusName",
+                    e
+                )
+            }
 
             Product(
                 id = id,
                 name = name,
                 price = price,
-                quantity = quantity,
+                quantity = quantity.toInt(),
                 status = status
             )
         }

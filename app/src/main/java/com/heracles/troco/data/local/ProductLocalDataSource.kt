@@ -5,6 +5,7 @@ import com.heracles.troco.data.local.dao.PendingSyncOperationDao
 import com.heracles.troco.data.local.dao.ProductDao
 import com.heracles.troco.data.local.entity.PendingSyncOperationEntity
 import com.heracles.troco.data.local.entity.ProductEntity
+import com.heracles.troco.domain.model.Product
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -42,6 +43,46 @@ class ProductLocalDataSource @Inject constructor(
                     productId = product.id
                 )
             )
+        }
+    }
+
+    suspend fun syncProductsFromRemote(products: List<Product>) {
+        appDatabase.withTransaction {
+            val pendingOperations = pendingSyncOperationDao.getPendingOperations()
+
+            val pendingProductIds = pendingOperations
+                .map { it.productId }
+                .toSet()
+
+            val remoteProductsIds = products.map { it.id }.toSet()
+
+            products.forEach { product ->
+                if (product.id !in pendingProductIds) {
+                    productDao.upsertProduct(
+                        ProductEntity(
+                            id = product.id,
+                            name = product.name,
+                            price = product.price,
+                            quantity = product.quantity,
+                            status = product.status
+                        )
+                    )
+                }
+            }
+
+            val localProducts = productDao.getAllProductsOnce()
+
+            localProducts.forEach { localProduct ->
+                val wasRemovedRemotely =
+                    localProduct.id !in remoteProductsIds
+
+                val hasPendingOperation =
+                    localProduct.id in pendingProductIds
+
+                if (wasRemovedRemotely && !hasPendingOperation) {
+                    productDao.deleteProduct(localProduct.id)
+                }
+            }
         }
     }
 

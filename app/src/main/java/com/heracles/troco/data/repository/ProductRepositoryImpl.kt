@@ -57,12 +57,15 @@ class ProductRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateProduct(product: Product) {
-        productDao.updateProduct(
-            id = product.id,
-            name = product.name,
-            price = product.price,
-            quantity = product.quantity,
-            status = product.status
+        localDataSource.saveProduct(
+            product = ProductEntity(
+                id = product.id,
+                name = product.name,
+                price = product.price,
+                quantity = product.quantity,
+                status = product.status
+            ),
+            operation = "UPDATE"
         )
     }
 
