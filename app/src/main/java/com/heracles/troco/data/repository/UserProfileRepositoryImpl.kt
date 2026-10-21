@@ -2,11 +2,12 @@ package com.heracles.troco.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.heracles.troco.data.remote.FirestoreUserMapper
 import com.heracles.troco.di.IoDispatcher
 import com.heracles.troco.domain.model.AuthResult
 import com.heracles.troco.domain.model.User
-import com.heracles.troco.domain.repository.SignupRepository
+import com.heracles.troco.domain.repository.UserProfileRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -18,12 +19,12 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class SignupRepositoryImpl @Inject constructor(
+class UserProfileRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth,
     private val firestoreMapper: FirestoreUserMapper,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
-) : SignupRepository {
+) : UserProfileRepository {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun observe(): Flow<User?> =
@@ -39,7 +40,7 @@ class SignupRepositoryImpl @Inject constructor(
 
             firestore.collection(USER_COLLECTION)
                 .document(uid)
-                .set(userMap)
+                .set(userMap, SetOptions.merge())
                 .await()
 
             AuthResult.Success(uid)

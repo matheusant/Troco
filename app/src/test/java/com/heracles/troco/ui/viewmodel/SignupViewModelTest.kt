@@ -4,7 +4,7 @@ import com.heracles.troco.MainDispatcherRule
 import com.heracles.troco.domain.model.AuthResult
 import com.heracles.troco.domain.model.User
 import com.heracles.troco.domain.repository.AuthRepository
-import com.heracles.troco.domain.repository.SignupRepository
+import com.heracles.troco.domain.repository.UserProfileRepository
 import com.heracles.troco.domain.usecase.auth.SaveUserUseCase
 import com.heracles.troco.domain.usecase.auth.ValidateCredentialsUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -46,12 +46,16 @@ class SignupViewModelTest {
             password: String
         ): AuthResult = AuthResult.Error("Operação não utilizada neste teste")
 
+        override suspend fun validateSession(): Boolean {
+            TODO("Not yet implemented")
+        }
+
         override fun sair() = Unit
     }
 
-    private class FakeSignupRepository(
+    private class FakeUserProfileRepository(
         private val saveResult: AuthResult = AuthResult.Success("uid-123")
-    ) : SignupRepository {
+    ) : UserProfileRepository {
         val savedUsers = mutableListOf<User>()
 
         override fun observe(): Flow<User?> = flowOf(null)
@@ -108,7 +112,7 @@ class SignupViewModelTest {
     @Test
     fun `cadastro invalido exibe erros e nao chama repositorios`() = runTest {
         val authRepository = FakeAuthRepository()
-        val signupRepository = FakeSignupRepository()
+        val signupRepository = FakeUserProfileRepository()
         val viewModel = createViewModel(authRepository, signupRepository)
 
         viewModel.signUp()
@@ -129,7 +133,7 @@ class SignupViewModelTest {
         val authRepository = FakeAuthRepository(
             signupResult = AuthResult.Success("uid-novo")
         )
-        val signupRepository = FakeSignupRepository()
+        val signupRepository = FakeUserProfileRepository()
         val viewModel = createViewModel(authRepository, signupRepository)
         fillValidForm(viewModel)
 
@@ -156,7 +160,7 @@ class SignupViewModelTest {
         val authRepository = FakeAuthRepository(
             signupResult = AuthResult.Error("Telefone já cadastrado")
         )
-        val signupRepository = FakeSignupRepository()
+        val signupRepository = FakeUserProfileRepository()
         val viewModel = createViewModel(authRepository, signupRepository)
         fillValidForm(viewModel)
 
@@ -172,7 +176,7 @@ class SignupViewModelTest {
 
     private fun createViewModel(
         authRepository: FakeAuthRepository = FakeAuthRepository(),
-        signupRepository: FakeSignupRepository = FakeSignupRepository()
+        signupRepository: FakeUserProfileRepository = FakeUserProfileRepository()
     ) = SignupViewModel(
         authCredential = ValidateCredentialsUseCase(),
         saveUserUseCase = SaveUserUseCase(signupRepository),

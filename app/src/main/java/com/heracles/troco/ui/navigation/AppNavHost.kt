@@ -1,5 +1,6 @@
 package com.heracles.troco.ui.navigation
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
@@ -49,7 +50,6 @@ import com.heracles.troco.components.TrocoAddFAB
 import com.heracles.troco.domain.model.Transaction
 import com.heracles.troco.domain.model.TransactionItem
 import com.heracles.troco.domain.model.TransactionType
-import com.heracles.troco.ui.screen.catalog.CatalogScreen
 import com.heracles.troco.ui.screen.LoginScreen
 import com.heracles.troco.ui.screen.ManagementScreen
 import com.heracles.troco.ui.screen.MeuFiadoScreen
@@ -59,11 +59,14 @@ import com.heracles.troco.ui.screen.ProductScreen
 import com.heracles.troco.ui.screen.ProductsScreen
 import com.heracles.troco.ui.screen.SignUpScreen
 import com.heracles.troco.ui.screen.TermsAndConditionsScreen
+import com.heracles.troco.ui.screen.catalog.CatalogScreen
 import com.heracles.troco.ui.theme.RubikFontFamily
 import com.heracles.troco.ui.viewmodel.CatalogViewModel
+import com.heracles.troco.ui.viewmodel.LoginViewModel
 import com.heracles.troco.ui.viewmodel.ProductViewModel
 import com.heracles.troco.ui.viewmodel.ProductsListViewModel
 import com.heracles.troco.ui.viewmodel.SignupViewModel
+import com.heracles.troco.ui.viewmodel.UserProfileUiState
 
 object Routes {
     const val LOGIN = "login"
@@ -81,6 +84,7 @@ object Routes {
 @Composable
 fun MerceariaApp(
     signUpViewModel: SignupViewModel = hiltViewModel(),
+    loginViewModel: LoginViewModel = hiltViewModel(),
     productViewModel: ProductViewModel = hiltViewModel(),
     productsListViewModel: ProductsListViewModel = hiltViewModel(),
     catalogViewModel: CatalogViewModel = hiltViewModel()
@@ -90,15 +94,19 @@ fun MerceariaApp(
     val navBarStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBarStackEntry?.destination?.route
 
-    val startDestination = remember { Routes.SIGN_UP }
+    val startDestination = remember { Routes.LOGIN }
 
     var editing by remember { mutableStateOf<String?>(null) }
+    var isAdmin by remember { mutableStateOf(false) }
+
+    val adminBottomBars = listOf(
+        BarItem.Management,
+        BarItem.Products
+    )
 
     val bottomBarItems = listOf(
-        BarItem.Management,
         BarItem.Catalog,
         BarItem.MeuFiado,
-        BarItem.Products,
     )
     val topBarItems = listOf(
         BarItem.Catalog,
@@ -120,7 +128,7 @@ fun MerceariaApp(
             AppBottomBar(
                 navController = navController,
                 currentRoute = currentRoute,
-                items = bottomBarItems
+                items = if (isAdmin) adminBottomBars else bottomBarItems
             )
         },
         floatingActionButton = {
@@ -187,14 +195,52 @@ fun MerceariaApp(
                 }
 
                 composable(Routes.LOGIN) {
-                    LoginScreen(
-                        onSignupSelected = { navController.navigate(Routes.SIGN_UP) },
-                        onSignIn = {
-                            navController.navigate(Routes.CATALOG) {
-                                popUpTo(Routes.LOGIN) { inclusive = true }
-                                launchSingleTop = true
+                    val loginUiState by loginViewModel.uiState.collectAsStateWithLifecycle()
+                    val profileState by loginViewModel.userProfileState.collectAsStateWithLifecycle()
+
+                    LaunchedEffect(loginUiState.autenticado, profileState) {
+                        if (!loginUiState.autenticado) return@LaunchedEffect
+
+                        when (val state = profileState) {
+                            is UserProfileUiState.Loaded -> {
+                                isAdmin = state.user.admin
+
+                                val destination = if (isAdmin) {
+                                    Routes.MANAGEMENT
+                                } else {
+                                    Routes.CATALOG
+                                }
+                                navController.navigate(destination) {
+                                    popUpTo(Routes.LOGIN) { inclusive = true }
+                                    launchSingleTop = true
+                                }
                             }
-                        },
+
+                            is UserProfileUiState.Loading,
+                            UserProfileUiState.SignedOut -> {}
+
+                            UserProfileUiState.Missing -> {
+                                Log.w(
+                                    "LoginScreen",
+                                    "Sessão autenticada, mas o perfil não foi encontrado."
+                                )
+                            }
+
+                            is UserProfileUiState.Error -> {
+                                Log.e(
+                                    "LoginScreen",
+                                    "Não foi possível carregar o perfil: ${state.message}"
+                                )
+                            }
+                        }
+                    }
+
+                    LoginScreen(
+                        state = loginUiState,
+                        onSignupSelected = { navController.navigate(Routes.SIGN_UP) },
+                        onPhoneChange = loginViewModel::onPhoneChange,
+                        onPasswordChange = loginViewModel::onPasswordChange,
+                        onSignIn = loginViewModel::signIn,
                     )
                 }
 

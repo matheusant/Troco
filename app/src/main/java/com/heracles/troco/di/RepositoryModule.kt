@@ -4,10 +4,10 @@ import com.heracles.troco.data.remote.ProductRemoteDataSource
 import com.heracles.troco.data.repository.FirebaseAuthRepository
 import com.heracles.troco.data.repository.FirestoreProductDataSourceImpl
 import com.heracles.troco.data.repository.ProductRepositoryImpl
-import com.heracles.troco.data.repository.SignupRepositoryImpl
+import com.heracles.troco.data.repository.UserProfileRepositoryImpl
 import com.heracles.troco.domain.repository.AuthRepository
 import com.heracles.troco.domain.repository.ProductRepository
-import com.heracles.troco.domain.repository.SignupRepository
+import com.heracles.troco.domain.repository.UserProfileRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -24,7 +24,7 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindSignupRepository(impl: SignupRepositoryImpl): SignupRepository
+    abstract fun bindUserProfileRepository(impl: UserProfileRepositoryImpl): UserProfileRepository
 
     @Binds
     @Singleton

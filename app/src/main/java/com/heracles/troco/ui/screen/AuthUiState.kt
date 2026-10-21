@@ -6,6 +6,11 @@ data class SignupErrors(
     var phone: String = "",
     var password: String = ""
 )
+data class LoginErrors(
+    var phone: String = "",
+    var password: String = "",
+    val general: String = ""
+)
 
 data class AuthUiState (
     val name: String = "",
@@ -13,6 +18,7 @@ data class AuthUiState (
     val phone: String = "",
     val password: String = "",
     val error: SignupErrors = SignupErrors(),
+    val loginError: LoginErrors = LoginErrors(),
     val isLoading: Boolean = false,
     val autenticado: Boolean = false
 )

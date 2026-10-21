@@ -7,7 +7,6 @@ import com.heracles.troco.domain.model.AuthResult
 import com.heracles.troco.domain.model.CredsValidationResult
 import com.heracles.troco.domain.model.User
 import com.heracles.troco.domain.repository.AuthRepository
-import com.heracles.troco.domain.usecase.auth.ObserveUserUseCase
 import com.heracles.troco.domain.usecase.auth.SaveUserUseCase
 import com.heracles.troco.domain.usecase.auth.ValidateCredentialsUseCase
 import com.heracles.troco.ui.screen.AuthUiState

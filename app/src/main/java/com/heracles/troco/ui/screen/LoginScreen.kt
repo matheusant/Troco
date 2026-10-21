@@ -41,11 +41,12 @@ import com.heracles.troco.ui.theme.TerracottaSecondary
 
 @Composable
 fun LoginScreen(
+    state: AuthUiState,
+    onPhoneChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
     onSignupSelected: () -> Unit,
     onSignIn: () -> Unit
 ) {
-    var phone by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -63,25 +64,28 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             TrocoTextField(
-                value = phone,
-                onValueChange = { phone = it },
+                value = state.phone,
+                onValueChange = onPhoneChange,
+                isPhone = true,
                 label = stringResource(R.string.phone),
                 placeholder = stringResource(R.string.phone_placeholder),
                 leadingIcon = rememberVectorPainter(image = Icons.Outlined.Phone),
                 keyboardType = KeyboardType.Phone,
+                hasError = state.loginError.phone,
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             TrocoTextField(
-                value = password,
-                onValueChange = { password = it },
+                value = state.password,
+                onValueChange = onPasswordChange,
                 isPassword = true,
                 label = stringResource(R.string.password),
                 placeholder = "Digite sua senha",
                 leadingIcon = rememberVectorPainter(image = Icons.Outlined.Lock),
                 keyboardType = KeyboardType.Password,
+                hasError = state.loginError.password,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -135,6 +139,9 @@ fun LoginScreen(
 @Composable
 private fun LoginScreenPreview() {
     LoginScreen(
+        state = AuthUiState(),
+        onPhoneChange = {},
+        onPasswordChange = {},
         onSignupSelected = {},
         onSignIn = {}
     )
