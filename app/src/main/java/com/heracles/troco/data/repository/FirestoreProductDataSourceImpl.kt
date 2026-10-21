@@ -1,9 +1,13 @@
 package com.heracles.troco.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import com.heracles.troco.data.remote.ProductRemoteDataSource
 import com.heracles.troco.domain.model.Product
 import com.heracles.troco.domain.model.ProductStatus
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -40,6 +44,43 @@ class FirestoreProductDataSourceImpl @Inject constructor(
             .get()
             .await()
 
+        return parseProducts(snapshot)
+    }
+
+    override fun observeProducts(): Flow<List<Product>> = callbackFlow {
+        val registration = productsCollection
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot == null) {
+                    close(
+                        IllegalStateException(
+                            "Não foi possível observar produtos do Firestore"
+                        )
+                    )
+                    return@addSnapshotListener
+                }
+
+                if (snapshot.metadata.isFromCache) {
+                    return@addSnapshotListener
+                }
+
+                try {
+                    trySend(parseProducts(snapshot))
+                } catch (e: Exception) {
+                    close(e)
+                }
+            }
+
+        awaitClose {
+            registration.remove()
+        }
+    }
+
+    private fun parseProducts(snapshot: QuerySnapshot): List<Product> {
         return snapshot.documents.map { document ->
             val id = document.id
 
