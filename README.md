@@ -21,10 +21,30 @@ O projeto foi construído utilizando as melhores práticas e ferramentas moderna
 - **Linguagem:** [Kotlin](https://kotlinlang.org/)
 - **Interface de Usuário:** [Jetpack Compose](https://developer.android.com/jetpack/compose) com Material 3 (UI 100% declarativa).
 - **Arquitetura:** Clean Architecture / MVVM (Model-View-ViewModel) com separação clara de responsabilidades (Camadas de `data`, `domain` e `ui`).
-- **Backend & Banco de Dados em Nuvem:** [Firebase Authentication](https://firebase.google.com/docs/auth) e [Cloud Firestore](https://firebase.google.com/docs/firestore).
-- **Banco de Dados Local & Offline-First:** [Room](https://developer.android.com/training/data-storage/room) já implementado para persistência e cache local (estratégia offline-first). O **WorkManager** será integrado em breve para gerenciar a sincronização em segundo plano com o Firestore.
-- **Assincronicidade:** Kotlin Coroutines & Flow.
+- **Backend & Banco de Dados em Nuvem:** [Firebase Authentication](https://firebase.google.com/docs/auth) e [Cloud Firestore](https://firebase.google.com/docs/firestore) com suporte a sincronização em tempo real.
+- **Persistência Local & Offline-First:** [Room](https://developer.android.com/training/data-storage/room) para persistência local e cache, integrado com **WorkManager** para sincronização robusta em segundo plano com o Firestore.
+- **Assincronicidade:** Kotlin Coroutines & Flow (listagem reativa e estados de carregamento).
 - **Navegação:** Jetpack Navigation Compose.
+
+---
+
+## ✨ Funcionalidades Implementadas
+
+1. **Autenticação e Perfil de Usuário:**
+   - Fluxo completo de login, validação de sessão e gerenciamento de perfil.
+   - Suporte a papéis de usuário (`admin` vs `cliente`) mapeados no Firestore.
+
+2. **Gerenciamento e Catálogo de Produtos:**
+   - Cadastro, edição, remoção e listagem reativa de produtos.
+   - Busca em tempo real e estados de carregamento otimizados.
+
+3. **Sincronização Offline-First e Real-Time:**
+   - Persistência local com Room para funcionamento offline.
+   - Sincronização em tempo real com o Cloud Firestore.
+   - Gerenciamento de tarefas em segundo plano utilizando WorkManager.
+
+4. **Caderneta de Fiado:**
+   - Acompanhamento de extratos, débitos e pagamentos.
 
 ---
 
@@ -33,10 +53,10 @@ O projeto foi construído utilizando as melhores práticas e ferramentas moderna
 1. **Cliente:**
    - Visualização do catálogo de produtos disponíveis.
    - Consulta do próprio saldo e histórico de fiado.
-   - Perfil do usuário.
+   - Gerenciamento de perfil e autenticação.
 
 2. **Administrador (Admin):**
-   - Gestão de produtos (Adicionar, editar, remover, atualizar estoque e preços).
+   - Gestão completa de produtos (Adicionar, editar, atualizar estoque e preços).
    - Gerenciamento de fiados e caderneta dos clientes.
 
 ---
@@ -68,4 +88,4 @@ Para detalhes técnicos avançados, regras de negócio e planejamento, consulte 
 
 ---
 
-*Este README será atualizado continuamente conforme novas funcionalidades e evoluções forem implementadas no projeto.*
+*Este README foi atualizado com as funcionalidades recentes implementadas no projeto.*
