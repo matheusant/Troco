@@ -26,6 +26,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,9 +48,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.heracles.troco.R
 import com.heracles.troco.components.TrocoAddFAB
-import com.heracles.troco.domain.model.Transaction
-import com.heracles.troco.domain.model.TransactionItem
-import com.heracles.troco.domain.model.TransactionType
 import com.heracles.troco.ui.screen.LoginScreen
 import com.heracles.troco.ui.screen.ManagementScreen
 import com.heracles.troco.ui.screen.MeuFiadoScreen
@@ -60,6 +58,7 @@ import com.heracles.troco.ui.screen.ProductsScreen
 import com.heracles.troco.ui.screen.SignUpScreen
 import com.heracles.troco.ui.screen.TermsAndConditionsScreen
 import com.heracles.troco.ui.screen.catalog.CatalogScreen
+import com.heracles.troco.ui.screen.fiado.FiadoNotebookScreen
 import com.heracles.troco.ui.theme.RubikFontFamily
 import com.heracles.troco.ui.viewmodel.CatalogViewModel
 import com.heracles.troco.ui.viewmodel.LoginViewModel
@@ -77,6 +76,8 @@ object Routes {
     const val PRODUCTS = "products"
     const val PRODUCT_CREATE = "product_create"
     const val PRODUCT_EDIT = "product_edit"
+    const val FIADO_NOTEBOOK = "fiado_notebook"
+    const val FIADO_USER = "fiado_user"
     const val TERMS_AND_CONDITIONS = "terms_and_conditions"
     const val PRIVACY_POLITICS = "privacy_politics"
 }
@@ -97,11 +98,13 @@ fun MerceariaApp(
     val startDestination = remember { Routes.LOGIN }
 
     var editing by remember { mutableStateOf<String?>(null) }
-    var isAdmin by remember { mutableStateOf(false) }
+    var userName by remember { mutableStateOf("") }
+    var isAdmin by rememberSaveable { mutableStateOf(false) }
 
     val adminBottomBars = listOf(
         BarItem.Management,
-        BarItem.Products
+        BarItem.Products,
+        BarItem.FiadoNotebook,
     )
 
     val bottomBarItems = listOf(
@@ -115,6 +118,8 @@ fun MerceariaApp(
         BarItem.Products,
         BarItem.ProductCreate,
         BarItem.ProductEdit,
+        BarItem.FiadoNotebook,
+        BarItem.FiadoUser(userName),
     )
 
     Scaffold(
@@ -259,114 +264,7 @@ fun MerceariaApp(
                         state = MeuFiadoUiState(
                             balance = "R$ 42,90",
                             dueDate = "11 de maio de 2026",
-                            transactions = listOf(
-                                Transaction(
-                                    title = "2x Café Torrado 500g, 1x Açucar 500g",
-                                    formattedDate = "Hoje às 09:12",
-                                    details = listOf(
-                                        TransactionItem(
-                                            name = "2x Café Torrado 500g",
-                                            subtotal = "39,90"
-                                        ),
-                                        TransactionItem(
-                                            name = "1x Açucar 500g",
-                                            subtotal = "3,00"
-                                        )
-                                    ),
-                                    amount = "- R$ 42,90",
-                                    type = TransactionType.PURCHASE
-                                ),
-                                Transaction(
-                                    title = "Pagamento parcial em dinheiro",
-                                    formattedDate = "Hoje às 15:00",
-                                    amount = "+ R$ 20,00",
-                                    type = TransactionType.PAYMENT
-                                ),
-                                Transaction(
-                                    title = "1x Açucar 500g",
-                                    formattedDate = "Hoje às 16:15",
-                                    details = listOf(
-                                        TransactionItem(
-                                            name = "1x Açucar 500g",
-                                            subtotal = "6,90"
-                                        )
-                                    ),
-                                    amount = "- R$ 6,90",
-                                    type = TransactionType.PURCHASE
-                                ),
-                                Transaction(
-                                    title = "Pagamento parcial em dinheiro",
-                                    formattedDate = "Hoje às 15:00",
-                                    amount = "+ R$ 20,00",
-                                    type = TransactionType.PAYMENT
-                                ),
-                                Transaction(
-                                    title = "1x Açucar 500g",
-                                    formattedDate = "Hoje às 16:15",
-                                    details = listOf(
-                                        TransactionItem(
-                                            name = "1x Açucar 500g",
-                                            subtotal = "6,90"
-                                        )
-                                    ),
-                                    amount = "- R$ 6,90",
-                                    type = TransactionType.PURCHASE
-                                ),
-                                Transaction(
-                                    title = "Pagamento parcial em dinheiro",
-                                    formattedDate = "Hoje às 15:00",
-                                    amount = "+ R$ 20,00",
-                                    type = TransactionType.PAYMENT
-                                ),
-                                Transaction(
-                                    title = "1x Açucar 500g",
-                                    formattedDate = "Hoje às 16:15",
-                                    details = listOf(
-                                        TransactionItem(
-                                            name = "1x Açucar 500g",
-                                            subtotal = "6,90"
-                                        )
-                                    ),
-                                    amount = "- R$ 6,90",
-                                    type = TransactionType.PURCHASE
-                                ),
-                                Transaction(
-                                    title = "Pagamento parcial em dinheiro",
-                                    formattedDate = "Hoje às 15:00",
-                                    amount = "+ R$ 20,00",
-                                    type = TransactionType.PAYMENT
-                                ),
-                                Transaction(
-                                    title = "1x Açucar 500g",
-                                    formattedDate = "Hoje às 16:15",
-                                    details = listOf(
-                                        TransactionItem(
-                                            name = "1x Açucar 500g",
-                                            subtotal = "6,90"
-                                        )
-                                    ),
-                                    amount = "- R$ 6,90",
-                                    type = TransactionType.PURCHASE
-                                ),
-                                Transaction(
-                                    title = "Pagamento parcial em dinheiro",
-                                    formattedDate = "Hoje às 15:00",
-                                    amount = "+ R$ 20,00",
-                                    type = TransactionType.PAYMENT
-                                ),
-                                Transaction(
-                                    title = "1x Açucar 500g",
-                                    formattedDate = "Hoje às 16:15",
-                                    details = listOf(
-                                        TransactionItem(
-                                            name = "1x Açucar 500g",
-                                            subtotal = "6,90"
-                                        )
-                                    ),
-                                    amount = "- R$ 6,90",
-                                    type = TransactionType.PURCHASE
-                                )
-                            )
+                            fiadoTransactions = emptyList()
                         ),
                         scaffoldPadding = innerPadding
                     )
@@ -433,6 +331,15 @@ fun MerceariaApp(
                         onSave = {
                             productViewModel.saveProduct()
                             handler()
+                        }
+                    )
+                }
+
+                composable(Routes.FIADO_NOTEBOOK) {
+                    FiadoNotebookScreen(
+                        scaffoldPadding = innerPadding,
+                        onSelected = { fullName ->
+                            userName = fullName
                         }
                     )
                 }
@@ -592,9 +499,18 @@ sealed class BarItem(
         topTitle = "Editar Produto",
     )
 
-    object Caderneta : BarItem(
-        route = Routes.MEU_FIADO,
-        topTitle = "Caderneta Fiados",
+    object FiadoNotebook : BarItem(
+        route = Routes.FIADO_NOTEBOOK,
+        topTitle = "Caderneta de Fiado",
+        bottomTitle = "Caderneta",
+        icon = R.drawable.ic_mgmt_fiado
+    )
+
+    data class FiadoUser(
+        val title: String
+    ): BarItem(
+        route = Routes.FIADO_USER,
+        topTitle = title,
         bottomTitle = "Caderneta",
         icon = R.drawable.ic_mgmt_fiado
     )

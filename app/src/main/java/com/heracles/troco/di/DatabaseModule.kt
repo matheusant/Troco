@@ -3,8 +3,10 @@ package com.heracles.troco.di
 import android.content.Context
 import androidx.room.Room
 import com.heracles.troco.data.local.AppDatabase
+import com.heracles.troco.data.local.dao.FiadoTransactionDao
 import com.heracles.troco.data.local.dao.PendingSyncOperationDao
 import com.heracles.troco.data.local.dao.ProductDao
+import com.heracles.troco.data.local.dao.UserFiadoDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,4 +38,13 @@ object DatabaseModule {
     @Singleton
     fun providePendingOperationDao(database: AppDatabase): PendingSyncOperationDao =
         database.pendingSyncOperationDao()
+
+    @Provides
+    @Singleton
+    fun provideUserFiadoDao(database: AppDatabase): UserFiadoDao = database.userFiadoDao()
+
+    @Provides
+    @Singleton
+    fun provideFiadoTransactionDao(database: AppDatabase): FiadoTransactionDao =
+        database.fiadoTransactionDao()
 }
