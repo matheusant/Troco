@@ -59,8 +59,11 @@ import com.heracles.troco.ui.screen.SignUpScreen
 import com.heracles.troco.ui.screen.TermsAndConditionsScreen
 import com.heracles.troco.ui.screen.catalog.CatalogScreen
 import com.heracles.troco.ui.screen.fiado.FiadoNotebookScreen
+import com.heracles.troco.ui.screen.fiado.FiadoUserNewSaleScreen
+import com.heracles.troco.ui.screen.fiado.FiadoUserScreen
 import com.heracles.troco.ui.theme.RubikFontFamily
 import com.heracles.troco.ui.viewmodel.CatalogViewModel
+import com.heracles.troco.ui.viewmodel.FiadoNewSaleViewModel
 import com.heracles.troco.ui.viewmodel.LoginViewModel
 import com.heracles.troco.ui.viewmodel.ProductViewModel
 import com.heracles.troco.ui.viewmodel.ProductsListViewModel
@@ -78,6 +81,7 @@ object Routes {
     const val PRODUCT_EDIT = "product_edit"
     const val FIADO_NOTEBOOK = "fiado_notebook"
     const val FIADO_USER = "fiado_user"
+    const val FIADO_USER_NEW_SALE = "fiado_user_new_sale"
     const val TERMS_AND_CONDITIONS = "terms_and_conditions"
     const val PRIVACY_POLITICS = "privacy_politics"
 }
@@ -88,7 +92,8 @@ fun MerceariaApp(
     loginViewModel: LoginViewModel = hiltViewModel(),
     productViewModel: ProductViewModel = hiltViewModel(),
     productsListViewModel: ProductsListViewModel = hiltViewModel(),
-    catalogViewModel: CatalogViewModel = hiltViewModel()
+    catalogViewModel: CatalogViewModel = hiltViewModel(),
+    fiadoNewSaleViewModel: FiadoNewSaleViewModel = hiltViewModel()
 ) {
     val focusManger = LocalFocusManager.current
     val navController = rememberNavController()
@@ -98,7 +103,7 @@ fun MerceariaApp(
     val startDestination = remember { Routes.LOGIN }
 
     var editing by remember { mutableStateOf<String?>(null) }
-    var userName by remember { mutableStateOf("") }
+    var userName by rememberSaveable { mutableStateOf("") }
     var isAdmin by rememberSaveable { mutableStateOf(false) }
 
     val adminBottomBars = listOf(
@@ -120,6 +125,7 @@ fun MerceariaApp(
         BarItem.ProductEdit,
         BarItem.FiadoNotebook,
         BarItem.FiadoUser(userName),
+        BarItem.FiadoUserNewSale(userName),
     )
 
     Scaffold(
@@ -340,7 +346,26 @@ fun MerceariaApp(
                         scaffoldPadding = innerPadding,
                         onSelected = { fullName ->
                             userName = fullName
+                            navController.navigate(Routes.FIADO_USER)
                         }
+                    )
+                }
+
+                composable(Routes.FIADO_USER) {
+                    FiadoUserScreen(
+                        onNewSaleClick = {
+                            navController.navigate(Routes.FIADO_USER_NEW_SALE)
+                        },
+                        onGetPaidClick = {}
+                    )
+                }
+
+                composable(Routes.FIADO_USER_NEW_SALE) {
+                    val fiadoNewSaleUiState by fiadoNewSaleViewModel.uiState.collectAsStateWithLifecycle()
+                    FiadoUserNewSaleScreen(
+                        state = fiadoNewSaleUiState,
+                        onQueryChange = fiadoNewSaleViewModel::onSearchQueryChange,
+                        scaffoldPadding = innerPadding
                     )
                 }
 
@@ -511,6 +536,15 @@ sealed class BarItem(
     ): BarItem(
         route = Routes.FIADO_USER,
         topTitle = title,
+        bottomTitle = "Caderneta",
+        icon = R.drawable.ic_mgmt_fiado
+    )
+
+    data class FiadoUserNewSale(
+        val title: String
+    ): BarItem(
+        route = Routes.FIADO_USER_NEW_SALE,
+        topTitle = "Nova Venda - ${title.split(" ").first()}",
         bottomTitle = "Caderneta",
         icon = R.drawable.ic_mgmt_fiado
     )

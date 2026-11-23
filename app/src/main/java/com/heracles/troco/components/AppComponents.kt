@@ -364,7 +364,7 @@ fun ButtonComponent(content: @Composable (() -> Unit), onClick: () -> Unit, enab
                 .fillMaxWidth()
                 .heightIn(52.dp)
                 .background(
-                    color = MaterialTheme.colorScheme.primary,
+                    color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     shape = RoundedCornerShape(50.dp)
                 ),
             contentAlignment = Alignment.Center
